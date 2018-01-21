@@ -1,0 +1,17 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.junlianglin.learningone.fragment.HomeNewsFragment">
+
+    <!-- TODO: Update blank fragment layout -->
+    <com.example.junlianglin.learningone.view.NewsListView
+        android:id="@+id/listViewNews"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:listSelector="@color/colorPrimaryDark"
+        >
+
+    </com.example.junlianglin.learningone.view.NewsListView>
+
+</LinearLayout>
