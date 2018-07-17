@@ -17,10 +17,12 @@ public abstract class SimpleBaseAdapter<T> extends BaseAdapter {
     protected Context context = null;
     protected List<T> dataList = null;
     protected LayoutInflater layoutInflater = null;
+    protected int layoutId;
 
-    public    SimpleBaseAdapter(Context context,List<T> dataList){
+    public    SimpleBaseAdapter(Context context,List<T> dataList,int layoutId){
         this.context = context;
         this.dataList = dataList;
+        this.layoutId = layoutId;
         layoutInflater = LayoutInflater.from(context);
     }
 
@@ -51,7 +53,13 @@ public abstract class SimpleBaseAdapter<T> extends BaseAdapter {
     }
 
     @Override
-    public abstract View getView(int position, View view, ViewGroup viewGroup);
+    public  View getView(int position, View view, ViewGroup viewGroup){
+        BaseViewHolder viewHolder = BaseViewHolder.getViewHolder(context, view, viewGroup, layoutId, position);
+        convert(viewHolder, dataList.get(position));
+        return viewHolder.getConvertView();
+    }
+
+    public abstract void convert(BaseViewHolder viewHolder, T t);
 
 
 }

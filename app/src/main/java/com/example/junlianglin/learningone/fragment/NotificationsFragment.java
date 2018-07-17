@@ -16,16 +16,6 @@ import org.xutils.view.annotation.ContentView;
 @ContentView(R.layout.fragment_notifications)
 public class NotificationsFragment extends BaseFragment {
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-    }
-
-
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-    }
 
     @Override
     protected void initParams() {

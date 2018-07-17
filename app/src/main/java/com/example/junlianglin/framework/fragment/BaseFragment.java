@@ -18,30 +18,30 @@ import org.xutils.x;
 public abstract class BaseFragment extends Fragment {
 
     protected Context context;
+    protected String token;
 
     private boolean injected = false;
 
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        this.context = context;
-    }
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         injected = true;
         //initParams();
+        this.context = getContext();
+        //View view = inflater.inflate(this,container,false);
         View view = x.view().inject(this, inflater, container);
         initParams();
+        setRetainInstance(true);
         return view;
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        if (!injected) {
+       if (!injected) {
+           this.context = getContext();
             x.view().inject(this, this.getView());
             initParams();
         }

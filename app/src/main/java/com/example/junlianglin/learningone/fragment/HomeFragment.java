@@ -1,20 +1,29 @@
 package com.example.junlianglin.learningone.fragment;
 
-import android.content.Context;
-import android.os.Bundle;
-import android.support.annotation.Nullable;
+import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.View;
+import android.widget.AbsListView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.junlianglin.framework.fragment.BaseFragment;
 import com.example.junlianglin.learningone.R;
+import com.example.junlianglin.learningone.adapter.TaskAdapter;
+import com.example.junlianglin.learningone.model.Task;
+import com.example.junlianglin.learningone.model.TaskList;
+import com.example.junlianglin.learningone.utils.Preferences;
+import com.example.junlianglin.learningone.utils.ServerUrl;
 
+import org.xutils.common.Callback;
+import org.xutils.http.RequestParams;
 import org.xutils.view.annotation.ContentView;
 import org.xutils.view.annotation.Event;
 import org.xutils.view.annotation.ViewInject;
+import org.xutils.x;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,120 +32,124 @@ import java.util.List;
 @ContentView(R.layout.fragment_home)
 public class HomeFragment extends BaseFragment {
 
-    @ViewInject(R.id.textViewNews)
-    private TextView textViewNews;
+    @ViewInject(R.id.listViewTasks)
+    private ListView listViewTasks;
 
-    @ViewInject(R.id.textViewPromos)
-    private TextView textViewPromos;
+    //@ViewInject(R.id.footer)
+    private LinearLayout footer;
 
-    @ViewInject(R.id.textViewRecoms)
-    private TextView textViewRecoms;
+    private TaskAdapter tasksAdapter ;
 
-    @ViewInject(R.id.viewPagerHome)
-    private ViewPager viewPagerHome;
+    private List<Task> dataList = new ArrayList<>();
 
-    private List<Fragment> fragmentList = new ArrayList<>();
-
-    private HomeNewsFragment homeNewsFragment;
-    private HomePromsFragment homePromsFragment;
-    private HomeRecomsFragment homeRecomsFragment;
+    private int pageNumber = 1;
+    private boolean hasNextPage = false;
+    private TaskListDataTask mAuthTask = null;
+    private boolean isLoading = false;
 
 
 
     @Override
     protected void initParams() {
-        homeNewsFragment = new HomeNewsFragment();
-        homePromsFragment = new HomePromsFragment();
-        homeRecomsFragment = new HomeRecomsFragment();
-        fragmentList.add(homeNewsFragment);
-        fragmentList.add(homePromsFragment);
-        fragmentList.add(homeRecomsFragment);
+        Preferences preferences = new Preferences();
+        token = preferences.getAccessToken();
+        footer  = (LinearLayout)getLayoutInflater().inflate(R.layout.layout_foot,null,false);
 
-        viewPagerHome.setAdapter(new FragmentStatePagerAdapter(getChildFragmentManager()) {
+        listViewTasks.addFooterView(footer);
+        footer.setVisibility(View.INVISIBLE);
+        tasksAdapter = new TaskAdapter(context,dataList,R.layout.layout_home_tasks);
+        listViewTasks.setAdapter(tasksAdapter);
+
+        listViewTasks.setOnScrollListener(new AbsListView.OnScrollListener(){
+            private int state;
+
             @Override
-            public Fragment getItem(int position) {
-                return fragmentList.get(position);
+            public void onScrollStateChanged(AbsListView absListView, int scrollState) {
+                state = scrollState;
             }
 
             @Override
-            public int getCount() {
-                return fragmentList.size();
+            public void onScroll(AbsListView absListView, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+
+                if (!isLoading && hasNextPage && state==1 &&
+                        (firstVisibleItem+visibleItemCount>=totalItemCount)){
+                    footer.setVisibility(View.VISIBLE);
+                    isLoading = true;
+                    mAuthTask = new TaskListDataTask(pageNumber, token);
+                    mAuthTask.execute((Void) null);
+                }
             }
         });
-        viewPagerHome.setCurrentItem(0);
-        viewPagerHome.addOnPageChangeListener(new ViewPageOnChangeListener());
+
+        mAuthTask = new TaskListDataTask(pageNumber, token);
+        mAuthTask.execute((Void) null);
 
 
 
     }
 
 
-    // must be define as a private method
-    @Event(value = {R.id.textViewNews,R.id.textViewPromos,R.id.textViewRecoms})
-    private void onTextViewClick(View view){
-        System.out.println(view.getId());
-
-        switch (view.getId()){
-
-            case  R.id.textViewNews:
-                viewPagerHome.setCurrentItem(0);
-                break;
-            case R.id.textViewPromos:
-
-                viewPagerHome.setCurrentItem(1);
-                break;
-
-            case R.id.textViewRecoms:
-                viewPagerHome.setCurrentItem(2);
-                break;
-            default:
-                viewPagerHome.setCurrentItem(0);
-                break;
-        }
-
-
-    }
-    @Event(value = R.id.viewPagerHome,
-            type = ViewPager.OnPageChangeListener.class)
-    private void onViewPageOnChange(){
-
-    }
-
-    public class ViewPageOnChangeListener implements ViewPager.OnPageChangeListener{
-        @Override
-        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-        }
-
-        @Override
-        public void onPageSelected(int position) {
-            System.out.println("position=" + position);
-            switch (position){
-                case 0:
-                    textViewNews.setTextColor(getResources().getColor(R.color.colorAccent));
-                    textViewPromos.setTextColor(getResources().getColor(R.color.colorPrimary));
-                    textViewRecoms.setTextColor(getResources().getColor(R.color.colorPrimary));
-                    break;
-                case 1:
-                    textViewNews.setTextColor(getResources().getColor(R.color.colorPrimary));
-                    textViewPromos.setTextColor(getResources().getColor(R.color.colorAccent));
-                    textViewRecoms.setTextColor(getResources().getColor(R.color.colorPrimary));
-                    break;
-                case 2:
-                    textViewNews.setTextColor(getResources().getColor(R.color.colorPrimary));
-                    textViewPromos.setTextColor(getResources().getColor(R.color.colorPrimary));
-                    textViewRecoms.setTextColor(getResources().getColor(R.color.colorAccent));
-                    break;
-                default:
-                    break;
-
+    private void loadData(TaskList list){
+        hasNextPage = list.pagination.hasNextPage;
+        pageNumber = list.pagination.pageNumber+1;
+        isLoading = false;
+        if (list!=null && list.data.size()>0){
+            for(int i=0;i<list.data.size();i++){
+                dataList.add(list.data.get(i));
             }
+        }
+    }
 
+    public class TaskListDataTask extends AsyncTask<Void, Void, TaskList> {
+        private int pageNumber;
+        private final String token;
+
+        public void setPageNumber(int pageNumber){
+            this.pageNumber = pageNumber;
+        }
+
+        public TaskListDataTask(int pageNumber,String token){
+            this.pageNumber = pageNumber;
+            this.token = token;
+        }
+        @Override
+        protected TaskList doInBackground(Void... voids) {
+            try {
+                Thread.sleep(2000);
+                RequestParams requestParams = new RequestParams(
+                        ServerUrl.REMOTEURL + ":" + ServerUrl.REMOTEPORT + ServerUrl.TASK_LIST
+                                + "?pageNo="+ pageNumber +"&pageSize=15");
+                requestParams.addHeader("Token",token);
+                requestParams.addHeader("Content-Type","application/json");
+
+                x.http().post(requestParams, new Callback.CommonCallback<TaskList>() {
+                    @Override
+                    public void onSuccess(TaskList result) {
+                        loadData(result);
+                    }
+                    @Override
+                    public void onError(Throwable ex, boolean isOnCallback) {
+                    }
+
+                    @Override
+                    public void onCancelled(CancelledException cex) {
+                    }
+
+                    @Override
+                    public void onFinished() {
+                        tasksAdapter.notifyDataSetChanged();
+                    }
+                });
+            } catch (InterruptedException e) {
+                return null;
+            }
+            return null;
         }
 
         @Override
-        public void onPageScrollStateChanged(int state) {
-
+        protected void onPostExecute(final TaskList success) {
+            super.onPostExecute(success);
+            footer.setVisibility(View.INVISIBLE);
         }
     }
 }

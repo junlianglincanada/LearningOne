@@ -1,8 +1,11 @@
 package com.example.junlianglin.learningone.activity;
 
 
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 
 import android.os.Bundle;
@@ -12,29 +15,39 @@ import android.view.MenuItem;
 
 import com.example.junlianglin.learningone.fragment.DashboardFragment;
 import com.example.junlianglin.learningone.fragment.HomeFragment;
+import com.example.junlianglin.learningone.fragment.MoreFragment;
 import com.example.junlianglin.learningone.fragment.NotificationsFragment;
 import com.example.junlianglin.framework.activity.BaseActivity;
-import com.example.junlianglin.framework.application.MyApplication;
 import com.example.junlianglin.learningone.R;
+import com.example.junlianglin.learningone.model.TaskList;
+import com.example.junlianglin.learningone.service.TaskService;
+import com.example.junlianglin.learningone.utils.NetworkChangeReceiver;
 
 import org.xutils.view.annotation.ContentView;
 import org.xutils.view.annotation.Event;
 import org.xutils.view.annotation.ViewInject;
-import org.xutils.x;
 
 @ContentView(R.layout.activity_start)
 public class StartActivity extends BaseActivity {
 
 
+    private IntentFilter intentFilter;
+    private NetworkChangeReceiver networkChangeReceiver;
 
     @ViewInject(R.id.navigation)
     private BottomNavigationView navigation;
 
     private FragmentTransaction fragmentTransaction;
 
-    private HomeFragment homeFragment;
-    private DashboardFragment dashboardFragment;
-    private NotificationsFragment notificationsFragment;
+    private HomeFragment homeFragment = new HomeFragment();
+    private DashboardFragment dashboardFragment = new DashboardFragment();
+    private NotificationsFragment notificationsFragment = new NotificationsFragment();
+    private  MoreFragment moreFragment = new MoreFragment();
+
+
+    private String token = "";
+
+    private Fragment currentFragment=new Fragment();;
 
 
 
@@ -43,87 +56,77 @@ public class StartActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         //x.view().inject(this);
         //MyApplication myApplication = (MyApplication)getApplicationContext();
-        if (savedInstanceState==null)
-            navigation.setSelectedItemId(R.id.navigation_home);
-        //setContentView(R.layout.activity_start);
+
+        intentFilter = new IntentFilter();
+        intentFilter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
+        networkChangeReceiver = new NetworkChangeReceiver();
+        registerReceiver(networkChangeReceiver, intentFilter);
+
+        Intent intent=getIntent();
+        token = intent.getStringExtra("token");
+
+        System.out.println("StartActivity token=" + token);
+        switchFragment(homeFragment).commit();
+
+
+
+
+
+
+
+
+
     }
+
+
+
 
 
     @Event(value = R.id.navigation,
             type = BottomNavigationView.OnNavigationItemSelectedListener.class)
     private boolean onNavigationItemClick(MenuItem item) {
-        System.out.println("item.getItemId()=" +item.getItemId() + " " + item.getTitle());
-        fragmentTransaction = getSupportFragmentManager().beginTransaction();
+
         boolean clickStatus = false;
-        try {
+
             switch (item.getItemId()) {
                 case R.id.navigation_home:
-                    //textView.setText(R.string.title_home);
-                   /* getSupportFragmentManager().beginTransaction()
-                            .add(R.id.frameLayout_MainFrame, new HomeFragment(), null)
-                            .commit();*/
-                    /*if (homeFragment==null){
-                        homeFragment = new HomeFragment();
-                    }
-                    fragmentTransaction.replace(R.id.frameLayout_MainFrame,homeFragment);*/
-                    fragmentTransaction.replace(R.id.frameLayout_MainFrame,
-                           HomeFragment.instantiate(StartActivity.this,HomeFragment.class.getName(),null),"home");
-
-
-                    clickStatus =  true;
-                    break;
+                    switchFragment(homeFragment).commit();
+                    return true;
                 case R.id.navigation_dashboard:
-
-                    /*getSupportFragmentManager().beginTransaction()
-                            .add(R.id.frameLayout_MainFrame, new DashboardFragment(), null)
-                            .commit();*/
-                    /*if (dashboardFragment==null){
-                        dashboardFragment = new DashboardFragment();
-                    }
-                    fragmentTransaction.replace(R.id.frameLayout_MainFrame,dashboardFragment);*/
-                    fragmentTransaction.replace(R.id.frameLayout_MainFrame,
-                            DashboardFragment.instantiate(StartActivity.this,DashboardFragment.class.getName(),null),"dashboard");
-
-                    clickStatus =  true;
-                    break;
+                    switchFragment(dashboardFragment).commit();
+                    return true;
                 case R.id.navigation_notifications:
-                    getSupportFragmentManager().beginTransaction()
-                            .add(R.id.frameLayout_MainFrame, new NotificationsFragment(), null);
-                    /*if (notificationsFragment==null){
-                        notificationsFragment = new NotificationsFragment();
-                    }
-                    fragmentTransaction.replace(R.id.frameLayout_MainFrame,notificationsFragment);*/
-                   fragmentTransaction.replace(R.id.frameLayout_MainFrame,
-                            NotificationsFragment.instantiate(StartActivity.this,NotificationsFragment.class.getName(),null),"notifications");
-
-                    clickStatus =  true;
-                    break;
+                    switchFragment(notificationsFragment).commit();
+                    return true;
+                case R.id.navigation_more:
+                    switchFragment(moreFragment).commit();
+                    return true;
                 default:
-                    //textView.setText("adfasdf");
                     break;
-
             }
 
-        }
-        catch (Exception ex){
-            ex.printStackTrace();
-        }
-        fragmentTransaction.commit();
-        System.out.println("fragmentTransaction.commit()");
-        System.out.println(getSupportFragmentManager().getFragments().size());
-        return clickStatus;
+
+        return false;
     }
-
-    private void hideFragment(FragmentTransaction fragmentTransaction, Fragment fragment){
-
-    }
-
 
 
 
     @Override
     protected void onResume() {
+
         super.onResume();
+    }
+
+    @Override
+    protected  void onDestroy(){
+        super.onDestroy();
+        unregisterReceiver(networkChangeReceiver);
+    }
+
+    @Override
+    protected  void onStop(){
+        super.onStop();
+
     }
 
     //@Override
@@ -131,8 +134,31 @@ public class StartActivity extends BaseActivity {
         //return R.layout.activity_start;
     //}
 
+
+
     @Override
     protected void initParams() {
+        //TaskService service = new TaskService();
+        //service.execute((Void) null);
 
+
+
+    }
+
+
+    private FragmentTransaction switchFragment(Fragment targetFragment) {
+
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        if (!targetFragment.isAdded()) {
+            if (currentFragment != null) {
+                transaction.hide(currentFragment);
+            }
+            transaction.add(R.id.frameLayout_MainFrame, targetFragment,targetFragment.getClass().getName());
+
+        } else {
+            transaction.hide(currentFragment).show(targetFragment);
+        }
+        currentFragment = targetFragment;
+        return transaction;
     }
 }

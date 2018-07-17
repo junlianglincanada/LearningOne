@@ -10,16 +10,18 @@ import com.example.junlianglin.learningone.R;
 
 import org.xutils.view.annotation.ContentView;
 
+
 /**
- * Created by JunliangLin on 1/6/2018.
+ * Created by JunliangLin on 2/1/2018.
  */
-@ContentView(R.layout.fragment_dashboard)
-public class DashboardFragment extends BaseFragment {
 
-
+@ContentView(R.layout.fragment_more)
+public class MoreFragment extends BaseFragment {
 
     @Override
     protected void initParams() {
 
     }
+
+
 }
