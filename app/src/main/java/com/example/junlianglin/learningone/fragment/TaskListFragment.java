@@ -1,36 +1,30 @@
 package com.example.junlianglin.learningone.fragment;
 
-import android.os.AsyncTask;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.example.junlianglin.framework.fragment.BaseFragment;
 import com.example.junlianglin.learningone.R;
 import com.example.junlianglin.learningone.adapter.TaskAdapter;
+import com.example.junlianglin.learningone.model.ReturnResult;
 import com.example.junlianglin.learningone.model.Task;
 import com.example.junlianglin.learningone.model.TaskList;
+import com.example.junlianglin.learningone.utils.TaskAsyncTask;
+import com.example.junlianglin.learningone.utils.AsyncTaskResponse;
 import com.example.junlianglin.learningone.utils.Preferences;
 import com.example.junlianglin.learningone.utils.ServerUrl;
 
-import org.xutils.common.Callback;
-import org.xutils.http.RequestParams;
 import org.xutils.view.annotation.ContentView;
-import org.xutils.view.annotation.Event;
 import org.xutils.view.annotation.ViewInject;
-import org.xutils.x;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-@ContentView(R.layout.fragment_home)
-public class HomeFragment extends BaseFragment {
+@ContentView(R.layout.fragment_tasklist)
+public class TaskListFragment extends BaseFragment {
 
     @ViewInject(R.id.listViewTasks)
     private ListView listViewTasks;
@@ -44,7 +38,8 @@ public class HomeFragment extends BaseFragment {
 
     private int pageNumber = 1;
     private boolean hasNextPage = false;
-    private TaskListDataTask mAuthTask = null;
+    //private TaskListDataTask mAuthTask = null;
+    private TaskAsyncTask mAuthTask = null;
     private boolean isLoading = false;
 
 
@@ -57,8 +52,10 @@ public class HomeFragment extends BaseFragment {
 
         listViewTasks.addFooterView(footer);
         footer.setVisibility(View.INVISIBLE);
-        tasksAdapter = new TaskAdapter(context,dataList,R.layout.layout_home_tasks);
+        tasksAdapter = new TaskAdapter(context,dataList,R.layout.layout_tasks);
         listViewTasks.setAdapter(tasksAdapter);
+        String url = ServerUrl.REMOTEURL + ":" + ServerUrl.REMOTEPORT + ServerUrl.TASK_LIST
+                + "?pageNo="+ pageNumber +"&pageSize=15";
 
         listViewTasks.setOnScrollListener(new AbsListView.OnScrollListener(){
             private int state;
@@ -73,16 +70,33 @@ public class HomeFragment extends BaseFragment {
 
                 if (!isLoading && hasNextPage && state==1 &&
                         (firstVisibleItem+visibleItemCount>=totalItemCount)){
+
+                    final String thisUrl = ServerUrl.REMOTEURL + ":" + ServerUrl.REMOTEPORT + ServerUrl.TASK_LIST
+                            + "?pageNo="+ pageNumber +"&pageSize=15";
                     footer.setVisibility(View.VISIBLE);
                     isLoading = true;
-                    mAuthTask = new TaskListDataTask(pageNumber, token);
+                    mAuthTask = new TaskAsyncTask(pageNumber, token,thisUrl,new AsyncTaskResponse(){
+                        @Override
+                        public void processFinish(ReturnResult output) {
+                            loadData((TaskList) output);
+                            tasksAdapter.notifyDataSetChanged();
+                        }
+                    });
                     mAuthTask.execute((Void) null);
                 }
             }
         });
 
-        mAuthTask = new TaskListDataTask(pageNumber, token);
+        mAuthTask = new TaskAsyncTask(pageNumber, token,url,new AsyncTaskResponse(){
+            @Override
+            public void processFinish(ReturnResult output) {
+                loadData((TaskList) output);
+                tasksAdapter.notifyDataSetChanged();
+
+            }
+        });
         mAuthTask.execute((Void) null);
+
 
 
 
@@ -90,17 +104,38 @@ public class HomeFragment extends BaseFragment {
 
 
     private void loadData(TaskList list){
-        hasNextPage = list.pagination.hasNextPage;
-        pageNumber = list.pagination.pageNumber+1;
+        hasNextPage = list.getPagination().hasNextPage;
+        pageNumber = list.getPagination().pageNumber+1;
         isLoading = false;
-        if (list!=null && list.data.size()>0){
-            for(int i=0;i<list.data.size();i++){
-                dataList.add(list.data.get(i));
+        if (list!=null && list.getData().size()>0){
+            for(int i=0;i<list.getData().size();i++){
+                dataList.add(list.getData().get(i));
             }
         }
     }
 
-    public class TaskListDataTask extends AsyncTask<Void, Void, TaskList> {
+    /*@Override
+    public void processFinish(ReturnResult output) {
+
+        TaskList result = (TaskList)output;
+        try{
+            System.out.println("ddddddddddddddd=" + result.getData().size());
+            loadData((TaskList) output);
+            tasksAdapter.notifyDataSetChanged();
+            System.out.println("changed");
+        }
+        catch (Exception ex){
+            ex.printStackTrace();
+        }
+    }*/
+
+    /*@Override
+    public void processFinish(TaskList output) {
+        loadData(output);
+        tasksAdapter.notifyDataSetChanged();
+    }*/
+
+    /*public class TaskListDataTask extends AsyncTask<Void, Void, TaskList> {
         private int pageNumber;
         private final String token;
 
@@ -151,5 +186,5 @@ public class HomeFragment extends BaseFragment {
             super.onPostExecute(success);
             footer.setVisibility(View.INVISIBLE);
         }
-    }
+    }*/
 }

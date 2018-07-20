@@ -3,13 +3,17 @@
     android:layout_width="match_parent"
     android:layout_height="80dp"
     android:padding="6dp"
-    android:id="@+id/frament_dashboard"
-    tools:context=".fragment.DashboardFragment">
+    android:id="@+id/frament_formlist"
+    tools:context=".fragment.FormsListFragment">
 
     <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <ListView
+        android:id="@+id/listViewforms"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:listSelector="@color/colorPrimaryDark"
+        >
+
+    </ListView>
 
 </LinearLayout>

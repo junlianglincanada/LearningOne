@@ -6,7 +6,7 @@
     android:orientation="vertical"
     android:background="@android:color/white"
     android:id="@+id/frament_home"
-    tools:context=".fragment.HomeFragment">
+    tools:context=".fragment.TaskListFragment">
 
     <!-- TODO: Update blank fragment layout -->
 

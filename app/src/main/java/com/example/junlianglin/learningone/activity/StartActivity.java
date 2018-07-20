@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 
 import android.os.Bundle;
@@ -13,14 +12,12 @@ import android.os.Bundle;
 import android.view.MenuItem;
 
 
-import com.example.junlianglin.learningone.fragment.DashboardFragment;
-import com.example.junlianglin.learningone.fragment.HomeFragment;
+import com.example.junlianglin.learningone.fragment.FormsListFragment;
+import com.example.junlianglin.learningone.fragment.TaskListFragment;
 import com.example.junlianglin.learningone.fragment.MoreFragment;
 import com.example.junlianglin.learningone.fragment.NotificationsFragment;
 import com.example.junlianglin.framework.activity.BaseActivity;
 import com.example.junlianglin.learningone.R;
-import com.example.junlianglin.learningone.model.TaskList;
-import com.example.junlianglin.learningone.service.TaskService;
 import com.example.junlianglin.learningone.utils.NetworkChangeReceiver;
 
 import org.xutils.view.annotation.ContentView;
@@ -39,8 +36,8 @@ public class StartActivity extends BaseActivity {
 
     private FragmentTransaction fragmentTransaction;
 
-    private HomeFragment homeFragment = new HomeFragment();
-    private DashboardFragment dashboardFragment = new DashboardFragment();
+    private TaskListFragment homeFragment = new TaskListFragment();
+    private FormsListFragment dashboardFragment = new FormsListFragment();
     private NotificationsFragment notificationsFragment = new NotificationsFragment();
     private  MoreFragment moreFragment = new MoreFragment();
 
@@ -138,8 +135,7 @@ public class StartActivity extends BaseActivity {
 
     @Override
     protected void initParams() {
-        //TaskService service = new TaskService();
-        //service.execute((Void) null);
+
 
 
 
