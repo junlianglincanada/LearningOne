@@ -2,6 +2,7 @@ package com.example.junlianglin.learningone.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 public class Task implements Serializable {
     public int id;
@@ -12,6 +13,7 @@ public class Task implements Serializable {
     public String buildingAddress;
     public int unitNumber;
     public Date inspectedDate;
+    public Submission submissionDetails;
 
     public Task(){
 
@@ -79,5 +81,13 @@ public class Task implements Serializable {
 
     public void setInspectedDate(Date inspectedDate) {
         this.inspectedDate = inspectedDate;
+    }
+
+    public Submission getSubmissionDetails() {
+        return submissionDetails;
+    }
+
+    public void setSubmissionDetails(Submission submissionDetails) {
+        this.submissionDetails = submissionDetails;
     }
 }

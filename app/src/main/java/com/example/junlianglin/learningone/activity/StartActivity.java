@@ -14,8 +14,7 @@ import android.view.MenuItem;
 
 import com.example.junlianglin.learningone.fragment.FormsListFragment;
 import com.example.junlianglin.learningone.fragment.TaskListFragment;
-import com.example.junlianglin.learningone.fragment.MoreFragment;
-import com.example.junlianglin.learningone.fragment.NotificationsFragment;
+import com.example.junlianglin.learningone.fragment.SynchronizeFragment;
 import com.example.junlianglin.framework.activity.BaseActivity;
 import com.example.junlianglin.learningone.R;
 import com.example.junlianglin.learningone.utils.NetworkChangeReceiver;
@@ -38,8 +37,8 @@ public class StartActivity extends BaseActivity {
 
     private TaskListFragment homeFragment = new TaskListFragment();
     private FormsListFragment dashboardFragment = new FormsListFragment();
-    private NotificationsFragment notificationsFragment = new NotificationsFragment();
-    private  MoreFragment moreFragment = new MoreFragment();
+    private SynchronizeFragment synchronizeFragment = new SynchronizeFragment();
+    //private  MoreFragment moreFragment = new MoreFragment();
 
 
     private String token = "";
@@ -93,11 +92,11 @@ public class StartActivity extends BaseActivity {
                     switchFragment(dashboardFragment).commit();
                     return true;
                 case R.id.navigation_notifications:
-                    switchFragment(notificationsFragment).commit();
+                    switchFragment(synchronizeFragment).commit();
                     return true;
-                case R.id.navigation_more:
+                /*case R.id.navigation_more:
                     switchFragment(moreFragment).commit();
-                    return true;
+                    return true;*/
                 default:
                     break;
             }

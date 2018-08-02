@@ -2,7 +2,7 @@
     <string name="app_name">LearningOne</string>
     <string name="task_list">TaskList</string>
     <string name="form_list">FormList</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="title_notifications">Synchronize</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello</string>

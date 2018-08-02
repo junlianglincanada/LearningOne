@@ -17,7 +17,8 @@ public class DateDeserializer implements JsonDeserializer<Date> {
         String date = json.getAsString();
 
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
+        //formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
+        formatter.setTimeZone(TimeZone.getDefault());
 
         try {
             return formatter.parse(date);

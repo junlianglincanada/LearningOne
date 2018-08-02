@@ -1,12 +1,15 @@
 package com.example.junlianglin.learningone.model;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class Form implements Serializable {
-    public int id;
-    public int cityId;
-    public String name;
-    public int startNumber;
+    private int id;
+    private int cityId;
+    private String name;
+    private int startNumber;
+
+    private List<Category> fieldCategories;
 
     public int getId() {
         return id;
@@ -38,5 +41,13 @@ public class Form implements Serializable {
 
     public void setStartNumber(int startNumber) {
         this.startNumber = startNumber;
+    }
+
+    public List<Category> getFieldCategories() {
+        return fieldCategories;
+    }
+
+    public void setFieldCategories(List<Category> fieldCategories) {
+        this.fieldCategories = fieldCategories;
     }
 }

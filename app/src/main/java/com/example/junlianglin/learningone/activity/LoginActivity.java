@@ -88,18 +88,9 @@ public class LoginActivity extends BaseActivity  {
         }
         preferences = null;
 
+        SqliteDBHelper sqliteDBHelper = new SqliteDBHelper(this);
 
 
-        try {
-            SqliteDBHelper mDbHelper = new SqliteDBHelper(this.getBaseContext());
-            SQLiteDatabase db = mDbHelper.getWritableDatabase();
-            ContentValues values = new ContentValues();
-            values.put("token", "dddddzxcvz");
-            long newRowId = db.insert(SqliteDBHelper.TABLE_T_USER, null, values);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         SQLiteStudioService.instance().start(this);
 
 
